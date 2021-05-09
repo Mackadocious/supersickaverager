@@ -16,11 +16,14 @@ import java.util.NoSuchElementException;
 public class WeightedAvgDataAnalyzer {
     private static Double weight;
     private static Double drop;
-    private static ArrayList<Double> copyList;
+    private static ArrayList<Double> copyList = new ArrayList<>();
 
 
-
-
+/** Main Method. Prompts the user to input a file name that has to be located in the root directory of the project.
+    Runs the readfile method, and reads in the values from the .txt file. Creates a new weighted average object that
+    Runs the calc method of the weighted average object that calcs thew weighted average after dropping the second value
+    amount of numbers that is located in the .txt file.
+**/
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
 
@@ -32,14 +35,17 @@ public class WeightedAvgDataAnalyzer {
                 String filename = in.next();
 
                 ArrayList<Double> data = readFile(filename);
+                for(int i = 2; i < data.size(); i++){
+                    copyList.add(data.get(i))
+;                }
 
 
                 WeightedAverage avg = new WeightedAverage(data);
                 double avgFinal = avg.calc();
                 System.out.print("The weighted average of the numbers is " + avgFinal +
                         " when using the data");
-                        for(int i = 1; i < data.size(); i++){
-                            System.out.print(" " + data.get(i));
+                        for(int i = 0; i < copyList.size(); i++){
+                            System.out.print(" " + copyList.get(i));
                         }
                          System.out.print(" where " + weight +
                         " is the weight used, and the average is computed " +
@@ -91,6 +97,9 @@ public class WeightedAvgDataAnalyzer {
     }
 }
 
+/**
+ * Weighted average object with constructor that sets the arrayOFDoubles to arrayList passed.
+ */
 class WeightedAverage{
     double weight;
     double dropNumber;
@@ -98,39 +107,49 @@ class WeightedAverage{
     public WeightedAverage(ArrayList<Double> data) {
         this.arrayOfDoubles = data;
     }
-
+/*
+Main function of Weighted Average object. Get's the weight from the read in file, stores it as an object variable and then
+removes that from the arrayOfDouble
+Reads in the number to drop and stores it as variable within the object. Sorts the array from least to greatest
+Runs the drops function, and the calc function and returns the calculated average after the drop.
+ */
     public Double calc() {
         this.weight = arrayOfDoubles.get(0);
         arrayOfDoubles.remove(0);
         this.arrayOfDoubles = arrayOfDoubles;
         dropNumber = this.arrayOfDoubles.get(0);
-        arrayOfDoubles.remove(0);
-        Collections.sort(arrayOfDoubles);
-        arrayOfDoubles = dropLowest(arrayOfDoubles);
-        return calcAverage(arrayOfDoubles, weight);
+        this.arrayOfDoubles.remove(0);
+        Collections.sort(this.arrayOfDoubles);
+
+        arrayOfDoubles = dropLowest(this.arrayOfDoubles);
+        return calcAverage(this.arrayOfDoubles, this.weight);
     }
 
-
+/*
+Calculates the weighted average of the remaining values after the drop, based on the weight value stored in the object
+ */
 
     private Double calcAverage(ArrayList<Double> arrayOfDoubles, double weight) {
         double sum = 0;
-        for(int i = 0; i < arrayOfDoubles.size(); i++){
-            sum += arrayOfDoubles.get(i);
+
+        for(int i = 0; i < this.arrayOfDoubles.size(); i++){
+            sum += this.arrayOfDoubles.get(i);
         }
-        System.out.println("weight " + weight + " size "+ arrayOfDoubles.size() + " drop number " + dropNumber);
         sum = sum * weight;
-        sum = sum/arrayOfDoubles.size();
+        sum = sum/(weight * this.arrayOfDoubles.size());
         return sum;
     }
-
+/*
+Drops the lowest numbers from the array of doubles based on the drop numbers stored in the Object.
+*/
 
     private ArrayList<Double> dropLowest(ArrayList<Double> arrayOfDoubles){
-        if(arrayOfDoubles.size() > dropNumber){
             for(int i = 0; i < dropNumber; i++){
-                arrayOfDoubles.remove(i);
+                this.arrayOfDoubles.remove(0);
+
             }
-        }
-        return arrayOfDoubles;
+
+        return this.arrayOfDoubles;
     }
 
 
