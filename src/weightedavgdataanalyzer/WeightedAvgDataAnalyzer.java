@@ -1,118 +1,137 @@
-/*
- * Filename: WeightedAvgDataAnalyzer.java
- * Short description: Class to ???
- * @author  Corey Williams
- * @version May 5, 2021
- */
-
 package weightedavgdataanalyzer;
 
-import java.io.*;
-import java.util.*;
-import java.nio.file.Path;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
+import java.util.NoSuchElementException;
 
 /**
- * @author clwil
- * @version 1.0 May 5, 2021
+ * This program processes a file containing a count followed by data values. If
+ * the file doesn't exist or the format is incorrect, you can specify another
+ * file.
  */
 public class WeightedAvgDataAnalyzer {
+    private static Double weight;
+    private static Double drop;
+    private static ArrayList<Double> copyList;
+
+
+
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        String fileName;
-        ArrayList<Double> arr;
 
-      // Keep trying until there are no more exceptions
+        // Keep trying until there are no more exceptions
         boolean done = false;
         while (!done) {
-            
-                System.out.print("Please enter the file name: ");
-            String filename = in.next();
             try {
-            ArrayList<Double> data = readFile(filename);
-            
-            // As an example for processing the data, we compute the sum
+                System.out.print("Please enter the file name: ");
+                String filename = in.next();
 
-            double sum = 0;
-            for (double d : data) { sum = sum + d; }
-            System.out.println("The sum is " + sum);
+                ArrayList<Double> data = readFile(filename);
 
-            done = true;
-            }
-            
-           
-            
-            catch (NoSuchElementException exception){
-                System.out.println("File contents invalid");
-            }
-            
-            catch (IOException exception){
+
+                WeightedAverage avg = new WeightedAverage(data);
+                double avgFinal = avg.calc();
+                System.out.print("The weighted average of the numbers is " + avgFinal +
+                        " when using the data");
+                        for(int i = 1; i < data.size(); i++){
+                            System.out.print(" " + data.get(i));
+                        }
+                         System.out.print(" where " + weight +
+                        " is the weight used, and the average is computed " +
+                        "after dropping the lowest "+drop+" values.");
+
+
+                done = true;
+            } catch (FileNotFoundException exception) {
+                System.out.println("File not found.");
+            } catch (NoSuchElementException exception) {
+                System.out.println("File contents invalid.");
+            } catch (IOException exception) {
                 exception.printStackTrace();
             }
         }
     }
-    
-    public static double[] readData(Scanner in) throws IOException {     
-      int numberOfValues = in.nextInt(); // May throw NoSuchElementException
-      double[] data = new double[numberOfValues];
 
-      for (int i = 0; i < numberOfValues; i++)
-      {
-         data[i] = in.nextDouble(); // May throw NoSuchElementException
-      }
-
-      if (in.hasNext())
-      {
-         throw new IOException("End of file expected");
-      }
-      return data;
-    }
-    
-    
-    public static ArrayList<Double> readFile (String filename) throws IOException {
-
-    }
-    
-    public static void writeData(List<Double> data) throws IOException {
-        double sum = 0;
-        double weight = data.get(0);
-        double amountToDrop = data.get(1);
-        
-        data.remove(0);
-        data.remove(0);
-        
-        String y = data.toString().replace("]","").replace("[", "");
-        Collections.sort(data);
-        
-        for (int i = 0; i < amountToDrop ; i++){
-            data.remove(0);
-            }
-        
-        for (double i : data){
-            sum = sum + (i * weight);
+    /**
+     * Opens a file and reads a data set.
+     *
+     * @param filename the name of the file holding the data
+     * @return the data in the file
+     */
+    public static ArrayList<Double> readFile(String filename) throws IOException {
+        File inFile = new File(filename);
+        Scanner in = new Scanner(inFile);
+        try {
+            return readData(in);
+        } finally {
+            in.close();
         }
-        
-        double x = sum/data.size();
-        
-        String result = "The weighted average of the numbers is " + x + ", when\n"
-                + "using the data " + y + "where " + weight + " is the weight\n"
-                + "used, and the average is computed after dropping the lowest \n" 
-                + ((int) amountToDrop) + " values.";
-                
-                Scanner out = new Scanner(System.in);
-                try {
-                    System.out.println("Please enter the file name to output too: ");
-                    String outputFilename = out.next();
-                    
-                    PrintWriter writer1 = new PrintWriter(new File(outputFilename));
-                    writer1.write(result);
-                    writer1.flush();
-                    writer1.close();
-                }
-                catch (IOException exception){
-                    exception.printStackTrace();
-                }
     }
+
+    /**
+     * Reads a data set.
+     *
+     * @param in the scanner that scans the data
+     * @return the data set
+     */
+    public static ArrayList<Double> readData(Scanner in) throws IOException {
+        ArrayList<Double> data = new ArrayList<>();
+        while(in.hasNextDouble()) {
+            data.add(in.nextDouble()); // May throw NoSuchElementException
+        }
+        weight = data.get(0);
+        drop = data.get(1);
+
+        return data;
+    }
+}
+
+class WeightedAverage{
+    double weight;
+    double dropNumber;
+    ArrayList<Double> arrayOfDoubles;
+    public WeightedAverage(ArrayList<Double> data) {
+        this.arrayOfDoubles = data;
+    }
+
+    public Double calc() {
+        this.weight = arrayOfDoubles.get(0);
+        arrayOfDoubles.remove(0);
+        this.arrayOfDoubles = arrayOfDoubles;
+        dropNumber = this.arrayOfDoubles.get(0);
+        arrayOfDoubles.remove(0);
+        Collections.sort(arrayOfDoubles);
+        arrayOfDoubles = dropLowest(arrayOfDoubles);
+        return calcAverage(arrayOfDoubles, weight);
+    }
+
+
+
+    private Double calcAverage(ArrayList<Double> arrayOfDoubles, double weight) {
+        double sum = 0;
+        for(int i = 0; i < arrayOfDoubles.size(); i++){
+            sum += arrayOfDoubles.get(i);
+        }
+        System.out.println("weight " + weight + " size "+ arrayOfDoubles.size() + " drop number " + dropNumber);
+        sum = sum * weight;
+        sum = sum/arrayOfDoubles.size();
+        return sum;
+    }
+
+
+    private ArrayList<Double> dropLowest(ArrayList<Double> arrayOfDoubles){
+        if(arrayOfDoubles.size() > dropNumber){
+            for(int i = 0; i < dropNumber; i++){
+                arrayOfDoubles.remove(i);
+            }
+        }
+        return arrayOfDoubles;
+    }
+
 
 }
