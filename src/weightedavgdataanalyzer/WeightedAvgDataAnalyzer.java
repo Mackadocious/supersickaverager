@@ -3,6 +3,7 @@ package weightedavgdataanalyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
@@ -33,6 +34,8 @@ public class WeightedAvgDataAnalyzer {
             try {
                 System.out.print("Please enter the file name: ");
                 String filename = in.next();
+                System.out.println("Please enter an output file name");
+                String output = in.next();
 
                 ArrayList<Double> data = readFile(filename);
                 for(int i = 2; i < data.size(); i++){
@@ -42,14 +45,16 @@ public class WeightedAvgDataAnalyzer {
 
                 WeightedAverage avg = new WeightedAverage(data);
                 double avgFinal = avg.calc();
-                System.out.print("The weighted average of the numbers is " + avgFinal +
+                String finalData = ("The weighted average of the numbers is " + avgFinal +
                         " when using the data");
-                        for(int i = 0; i < copyList.size(); i++){
-                            System.out.print(" " + copyList.get(i));
+                        for(int i = 0; i < copyList.size(); i++) {
+                            finalData += (" " + copyList.get(i));
                         }
-                         System.out.print(" where " + weight +
+
+                         finalData += (" where " + weight +
                         " is the weight used, and the average is computed " +
                         "after dropping the lowest "+drop+" values.");
+                        writeData(finalData, output);
 
 
                 done = true;
@@ -94,6 +99,13 @@ public class WeightedAvgDataAnalyzer {
         drop = data.get(1);
 
         return data;
+    }
+        //Writes a string to a file based on the file name
+    public static void writeData(String finalData, String fileName)throws IOException {
+        PrintWriter out = new PrintWriter(fileName);
+        System.out.println("final data " + finalData);
+        out.println(finalData);
+        out.close();
     }
 }
 
